@@ -1,0 +1,70 @@
+# -- coding: UTF-8 --
+
+# fearture 特征工程
+from sklearn.datasets import load_iris
+import pandas as pd
+import numpy
+
+iris = load_iris() # 加载数据
+iris_data = pd.DataFrame( iris.data)[0:19]
+iris_target = pd.DataFrame( iris.target)[0:19]
+# iris.data 特征矩阵
+# iris.target 目标向量
+
+# 数据预处理
+'''
+	对于特征， 会有以下问题
+	1. 不属于同一量纲。
+	*2. 信息冗余: 
+	3. 定性特征不能直接使用: 某些算法只接受定量特征的输入，需要将定性特征转变为定量特征。
+	*4. 缺失值
+	5. 信息利用率低
+	利用 sklearn 中的 preprocessing 库来进行数据预处理
+'''
+
+# 1. 无量纲化：将不同规格的数据转换到同一规格。
+# 标准化： (x - 均值) / 标准差 （ 前提: 特征数据服从正态分布 )
+
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer
+print( "标准化", StandardScaler().fit_transform( iris_data))
+
+# 区间放缩法: （ x - min ) / ( max = min)
+print( "区间放缩", MinMaxScaler().fit_transform( iris_data))
+
+# 归一化 
+print( "归一化:", Normalizer().fit_transform( iris_data)) # 单位向量
+
+# 2. 二值化，将数据按照阈值划分为 0，1
+from sklearn.preprocessing import Binarizer
+
+print( Binarizer( threshold = 3).fit_transform( iris_data))
+
+# 3. 对定性特征哑编码
+from sklearn.preprocessing import OneHotEncoder
+
+print( OneHotEncoder().fit_transform( iris.target.reshape( ( -1,1))))
+
+# 4. 缺失值计算
+from numpy import vstack, array, nan
+from sklearn.preprocessing import Imputer
+# 参数 strategy 为缺失值填充方式，默认为mean
+print( Imputer( strategy = 'mean' ).fit_transform( vstack( ( array( [nan, nan, nan, nan]), iris_data))))
+
+# 5. 数据变换
+from sklearn.preprocessing import PolynomialFeatures
+
+# print( PolynomialFeatures( degree = 3).fit_transform( iris_data))
+
+# 特征选择
+'''
+	1. 特征是否发散: 如果特征不发散，如方差接近于0，也就是说样本在这个特征上基本没有差异，即这个特征对样本的区分没有用。
+	2. 特征与目标的相关性: 比较显见，与目标相关性高的特征，应当优先选择。
+		a. Filter: 过滤法. 根据发散性或者相关性对各个特征进行评分，设定阈值或者待选择阈值的个数，选择特征。
+		b. Wrapper: 包装法，根据目标函数( 通常是预测效果评分)，每次选择若干特征，或者排除若干特征。
+		c. Embedded: 嵌入法, 先使用某些机器学习的算法和模型进行训练，得到各个特征的权值系数，根据系数从大到小选择特征。
+'''
+
+# Filter 
+# 方差选择法，先计算各个特征的方差，然后根据阈值，选择方差大于阈值的特征。
+from sklearn.feature_selection import VarianceThreshold 
+print( VarianceThreshold( threshold = 3).fit_transform( iris_data))
