@@ -1,0 +1,35 @@
+# Data Mining Course 2
+
+library( caret)
+library( mice)
+# Homework1
+#加载数据集
+air <- airquality
+# 查看数据集维度和变量属性
+dim( air)
+str( air) # 无因子型
+# 查看缺失值情况
+md.pattern( air) # Solar.R, Ozone 有 7,37 个缺失值
+# 将含有缺失值的变量剔除
+
+
+# 对Solar.R 的缺失值进行处理
+air_Solar.R <- air[ ,c( "Temp", "Month", "Day", "Solar.R")]
+index_solar.R <- is.na( air_Solar.R$Solar.R)
+# 划分训练集与测试集
+air_train1 <- air_Solar.R[ !index_solar.R, ] # 训练集
+air_test1 <- air_Solar.R[ index_solar.R, ] # 训练集
+# 线性回归
+lm1 <- lm( Solar.R~., data = air_train1)
+
+
+# 对Ozone 的缺失值进行处理
+air_Ozone <- air[ ,c( "Temp", "Month", "Day", "Ozone")]
+index_Ozone <- is.na( air_Ozone$Ozone)
+# 划分训练集与测试集
+air_train2 <- air_Ozone[ !index_Ozone, ] # 训练集
+air_test2 <- air_Ozone[ index_Ozone, ] # 训练集
+# 线性回归
+lm2 <- lm( Ozone~., data = air_train2)
+summary( lm2) # 查看模型优劣
+air_test2$Ozone <- predict( lm2, air_test2) # 有负数？ 如何优化？
