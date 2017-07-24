@@ -12,19 +12,8 @@ str( air) # 无因子型
 md.pattern( air) # Solar.R, Ozone 有 7,37 个缺失值
 # 将含有缺失值的变量剔除
 
-
-# 对Solar.R 的缺失值进行处理
-air_Solar.R <- air[ ,c( "Temp", "Month", "Day", "Solar.R")]
-index_solar.R <- is.na( air_Solar.R$Solar.R)
-# 划分训练集与测试集
-air_train1 <- air_Solar.R[ !index_solar.R, ] # 训练集
-air_test1 <- air_Solar.R[ index_solar.R, ] # 训练集
-# 线性回归
-lm1 <- lm( Solar.R~., data = air_train1)
-
-
 # 对Ozone 的缺失值进行处理
-air_Ozone <- air[ ,c( "Temp", "Month", "Day", "Ozone")]
+air_Ozone <- air[ ,c( "Wind", "Temp", "Month", "Day", "Ozone")]
 index_Ozone <- is.na( air_Ozone$Ozone)
 # 划分训练集与测试集
 air_train2 <- air_Ozone[ !index_Ozone, ] # 训练集
@@ -32,4 +21,42 @@ air_test2 <- air_Ozone[ index_Ozone, ] # 训练集
 # 线性回归
 lm2 <- lm( Ozone~., data = air_train2)
 summary( lm2) # 查看模型优劣
-air_test2$Ozone <- predict( lm2, air_test2) # 有负数？ 如何优化？
+air[ index_Ozone, 1] <- predict( lm2, air_test2) # 有负数？ 如何优化？
+
+
+# 对Solar.R 的缺失值进行处理
+air_Solar.R <- air[ ,c( "Wind", "Temp", "Month", "Day", "Solar.R")]
+index_solar.R <- is.na( air_Solar.R$Solar.R)
+# 划分训练集与测试集
+air_train1 <- air_Solar.R[ !index_solar.R, ] # 训练集
+air_test1 <- air_Solar.R[ index_solar.R, ] # 训练集
+# 线性回归
+lm1 <- lm( Solar.R~., data = air_train1)
+air[ index_solar.R, 2] <- predict( lm1, air_test1) 
+
+
+# Homework 2
+library(RANN)
+setwd( "D:\\R_Working_Directory\\Data Mining Course\\第二课")
+Wenjuan <- read.csv( "问卷调研数据.csv")[,-1] # 第一列为序列，可删除
+
+dim( Wenjuan)
+str( Wenjuan) # 无因子型
+ 
+# 查看缺失值情况
+md.pattern( Wenjuan)
+# 1利用 knn（k近邻）算法进行缺失值插补 ** 距离
+# 因为要求计算距离，需要保持请所有变量为数值型
+# 根据给定的k值，计算缺失值与完整值之间的距离，选取k个距离最近的点，点属于哪个类型的多
+knn.model <- preProcess( Wenjuan, method = "knnImpute") # 如果转成因子型，则会报错，跑不出
+Wenjuan1 <- predict( knn.model, Wenjuan)
+md.pattern( Wenjuan1)
+head( Wenjuan1) # 查看结果，发现 性别列存在小数点，不符合实际，因此这份数据不适用于knn算法。
+#应该对元数据进行因子转换后，进行哑变量处理，在使用knn算法。
+
+# 2利用袋装算法进行缺失值插补
+bag.model <- preProcess( Wenjuan, method = "bagImpute") # 报错
+
+# 3考虑用逻辑回归或者决策树进行分析（扩展）
+
+
