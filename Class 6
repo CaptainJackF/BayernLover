@@ -1,0 +1,13 @@
+# R KNN 算法学习
+# K最近邻分类算法，最简单的算法之。
+#一如果一个样本在特征空间中的k个最相似(即特征空间中最邻近)的样本中的大多数属于某一个类别，则该样本也属于这个类别。
+
+library( caret)
+iris_dataset <- iris
+iris_index <- createDataPartition( iris_dataset$Species, times = 1, p = 0.35, list = F, groups = min(5, length( iris_dataset$Species)))
+iris_train <- iris_dataset[ iris_index,]
+iris_test <- iris_dataset[ -iris_index,]
+
+knn( train = iris_train[ ,1:4 ], test = iris_test[ ,1:4 ], cl = iris_train[ ,5],
+     k = 4, prob = T)
+
