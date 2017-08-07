@@ -11,3 +11,8 @@ iris_test <- iris_dataset[ -iris_index,]
 knn( train = iris_train[ ,1:4 ], test = iris_test[ ,1:4 ], cl = iris_train[ ,5],
      k = 4, prob = T)
 
+# 验算
+test_knn <- function( input = 1, k = 1){
+  x <- (traindata[,1:4]-testdata[rep(n,75),1:4])^2
+  traindata$dist1 <- apply(x,1,function(x) sqrt(sum(x)))
+}
