@@ -16,3 +16,37 @@ test_knn <- function( input = 1, k = 1){
   x <- (traindata[,1:4]-testdata[rep(n,75),1:4])^2
   traindata$dist1 <- apply(x,1,function(x) sqrt(sum(x)))
 }
+
+
+# 从UCI Database 中获取数据，Get car data from UCI Database
+# dataset info:
+# PRICE overall price 
+#   buying buying price 
+#   maint price of the maintenance 
+# TECH technical characteristics 
+#  COMFORT comfort 
+#    doors number of doors 
+#    persons capacity in terms of persons to carry 
+#    lug_boot the size of luggage boot 
+#    safety estimated safety of the car 
+car <- read.table(  
+  'http://archive.ics.uci.edu/ml/machine-learning-databases/car/car.data',  
+  sep=',',  
+  header = F  
+)
+names_car <- c( "buying" , "maint", "doors", "persons", "lug_boot", "safety", "Class_Values")
+names( car) <- names_car
+str( car) # 查看到7个变量均为 Factor格式，需要转换格式并 进行哑变量处理
+prop.table(table(car$Class_Values)) # 查看各个 Class_Value 占比情况
+
+# 哑变量处理
+dummyVars( )
+#  
+# 分层抽样
+car_index <- createDataPartition( car$Class_Values, time = 1, p = 0.6, list = F )
+car_train <- car[ car_index, ]
+car_test <- car[ -car_index, ]
+
+# KNN 建模
+knn( train = car_train[ ,1:6], test = car_test[ ,1:6], cl = car_train[ ,7],
+     k = 3, prob = TRUE)
