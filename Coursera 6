@@ -32,31 +32,45 @@ test_knn <- function( input = 1, k = 1){
 car <- read.table(  
   'http://archive.ics.uci.edu/ml/machine-learning-databases/car/car.data',  
   sep=',',  
-  header = F  
+  header = F,
+  stringsAsFactors = F
 )
 names_car <- c( "buying" , "maint", "doors", "persons", "lug_boot", "safety", "Class_Values")
 names( car) <- names_car
 str( car) # 查看到7个变量均为 Factor格式，需要转换格式并 进行哑变量处理
 prop.table(table(car$Class_Values)) # 查看各个 Class_Value 占比情况
 
+
 # 哑变量处理
 # ------ test ------
-test_index <- createDataPartition( car$Class_Values, time = 1, p = 0.05, list = F )
+test_index <- createDataPartition( car$Class_Values, time = 1, p = 0.5, list = F )
 test <- car[ test_index, ]
 Class_Values <- as.character( test$Class_Values)
 test_for_model <- data.frame( predict( dummyVars( ~., data = test[ , 1:6] ), newdata = test[ , 1:6]), test$Class_Values)
 
-knn( train = car_train[ ,1:6], test = car_test[ ,1:6], cl = car_train[ ,7],
-     k = 3, prob = TRUE)
-
+result <- knn( train = test_for_model[ 1:800,1:21], test =  test_for_model[ 801:865,1:21], cl =  test_for_model[ 1:800,22],
+     k = 5, prob = TRUE)
+prop.table( table( test_for_model[ 801:865,22] == result))
 # ------ test ------
-dummyVars( ~buying, data=customers, fullRank=T)
-#  
+
+# 哑变量处理 
+# 先将 Class_Values 赋值出来
+Class_Values <- as.character( car$Class_Values)
+# 将Class_Values 剔除后进行哑变量处理，为了保证分类项不受变化。
+dmy <- dummyVars( ~., data = car[ , 1:6] ) 
+car_1 <- data.frame( predict( dmy, newdata = car[ , 1:6] ), Class_Values = car$Class_Values)
+
 # 分层抽样
-car_index <- createDataPartition( car$Class_Values, time = 1, p = 0.6, list = F )
-car_train <- car[ car_index, ]
-car_test <- car[ -car_index, ]
+car_index <- createDataPartition( car_1$Class_Values, time = 1, p = 0.8, list = F )
+car_train <- car_1[ car_index, ]
+car_test <- car_1[ -car_index, ]
 
 # KNN 建模
-knn( train = car_train[ ,1:6], test = car_test[ ,1:6], cl = car_train[ ,7],
-     k = 3, prob = TRUE)
+result <- knn( train = car_train[ ,1:21], test =  car_test[ ,1:21], cl =  car_train[ ,22],
+               k = 3, prob = TRUE)
+prop.table( table( car_test[ ,22] == result))
+
+
+# 优化 查看相关系数，删除某些不必要的变量？
+# 计算相关系数：涉及字符型 - 貌似有个计算相关系数的方法是可以涉及到字符串的。如果不行，则需要哑变量处理后，再计算相关系数。
+cor( car,  method = "spearman")
