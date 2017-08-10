@@ -40,7 +40,17 @@ str( car) # 查看到7个变量均为 Factor格式，需要转换格式并 进�
 prop.table(table(car$Class_Values)) # 查看各个 Class_Value 占比情况
 
 # 哑变量处理
-dummyVars( )
+# ------ test ------
+test_index <- createDataPartition( car$Class_Values, time = 1, p = 0.05, list = F )
+test <- car[ test_index, ]
+Class_Values <- as.character( test$Class_Values)
+test_for_model <- data.frame( predict( dummyVars( ~., data = test[ , 1:6] ), newdata = test[ , 1:6]), test$Class_Values)
+
+knn( train = car_train[ ,1:6], test = car_test[ ,1:6], cl = car_train[ ,7],
+     k = 3, prob = TRUE)
+
+# ------ test ------
+dummyVars( ~buying, data=customers, fullRank=T)
 #  
 # 分层抽样
 car_index <- createDataPartition( car$Class_Values, time = 1, p = 0.6, list = F )
