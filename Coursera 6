@@ -58,19 +58,38 @@ prop.table( table( test_for_model[ 801:865,22] == result))
 Class_Values <- as.character( car$Class_Values)
 # 将Class_Values 剔除后进行哑变量处理，为了保证分类项不受变化。
 dmy <- dummyVars( ~., data = car[ , 1:6] ) 
+# 将哑变量处理后的数据和分类项组合成DF
 car_1 <- data.frame( predict( dmy, newdata = car[ , 1:6] ), Class_Values = car$Class_Values)
 
-# 分层抽样
+# 分层抽样，抽取80%的数据，抽取1次
 car_index <- createDataPartition( car_1$Class_Values, time = 1, p = 0.8, list = F )
+# 划分训练集和测试集
 car_train <- car_1[ car_index, ]
 car_test <- car_1[ -car_index, ]
 
-# KNN 建模
+# KNN 建模，设置3和k(邻居)
 result <- knn( train = car_train[ ,1:21], test =  car_test[ ,1:21], cl =  car_train[ ,22],
                k = 3, prob = TRUE)
+# 查看与测试集分类项的百分比
 prop.table( table( car_test[ ,22] == result))
 
+# 验算过程
+Ceshi <- function( n = 1, k = 3){
+  # 计算第n和样本测试集与训练集样本的距离(欧式距离)
+  x <- ( car_train[ ,1:21] - car_test[ rep( n, dim(car_train)[1]), 1:21 ])^2
+  car_train$dist1 <- apply( x, 1, function(x) sqrt( sum( x) ) )
+  # 对距离进行升序排序，选择最近的K个邻居
+  mydata <- car_train[ order( car_train$dist1)[1:k],22:23]
+  # 统计不同类别的频数
+  result <- data.frame( sort( table( mydata$Species),decreasing = T))
+  # 给出最后的预测结果
+  return( result[1,1])
+}
+
+# 最终发现，全文本的数据集，哑变量后全部变为 0，1，后续计算无意义
+# 或者可以说，同一类型的数据，映射到2维坐标轴上基本上都是在同一个点上。
+# 全文本数据如何做分类？
 
 # 优化 查看相关系数，删除某些不必要的变量？
 # 计算相关系数：涉及字符型 - 貌似有个计算相关系数的方法是可以涉及到字符串的。如果不行，则需要哑变量处理后，再计算相关系数。
-cor( car,  method = "spearman")
+cor( data.frame( predict( dmy, newdata = car[ , 1:6] ), Class_Values = as,numeric( car$Class_Values) ) )
