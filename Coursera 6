@@ -93,3 +93,53 @@ Ceshi <- function( n = 1, k = 3){
 # 优化 查看相关系数，删除某些不必要的变量？
 # 计算相关系数：涉及字符型 - 貌似有个计算相关系数的方法是可以涉及到字符串的。如果不行，则需要哑变量处理后，再计算相关系数。
 cor( data.frame( predict( dmy, newdata = car[ , 1:6] ), Class_Values = as,numeric( car$Class_Values) ) )
+
+
+# 尝试用iris 数据集做KNN分类。
+iris_dataset <- iris
+
+cor( data.frame( predict( dmy, newdata = car[ , 1:6] ), Class_Values = as,numeric( car$Class_Values) ) )
+
+iris_index <- createDataPartition( iris_dataset$Species, times = 1, p = 0.35, list = F, groups = min(5, length( iris_dataset$Species)))
+iris_train <- iris_dataset[ iris_index,]
+iris_test <- iris_dataset[ -iris_index,]
+
+result_iris <- knn( train = iris_train[ ,1:4 ], test = iris_test[ ,1:4 ], cl = iris_train[ ,5],
+     k = 3, prob = T)
+
+# 验算
+Ceshi_iris <- function( n = 1, k = 3){
+  # 计算第n和样本测试集与训练集样本的距离(欧式距离)
+  x <- ( iris_train[ ,1:4] - car_test[ rep( n, dim( iris_train)[1]), 1:4 ])^2
+  iris_train$dist1 <- apply( x, 1, function(x) sqrt( sum( x) ) )
+  # 对距离进行升序排序，选择最近的K个邻居
+  mydata <- iris_train[ order( iris_train$dist1)[1:k],5:6]
+  # 统计不同类别的频数
+  result <- data.frame( sort( table( mydata$Species),decreasing = T))
+  # 给出最后的预测结果
+  return( result[1,1])
+}
+
+prop.table( table( iris_test[ ,5] == result_iris))
+
+
+
+# 利用朴素贝叶斯方法对 car数据进行分类
+library( e1071)
+car_NB <- read.table(  
+  'http://archive.ics.uci.edu/ml/machine-learning-databases/car/car.data',  
+  sep=',',  
+  header = F,
+  stringsAsFactors = F
+)
+names_car_NB <- c( "buying" , "maint", "doors", "persons", "lug_boot", "safety", "Class_Values")
+names( car_NB) <- names_car_NB
+
+car_NB_index <- createDataPartition( car_NB$Class_Values, time = 1, p = 0.5, list = F )
+# 划分训练集和测试集
+car_NB_train <- car_NB[ car_NB_index, ]
+car_NB_test <- car_NB[ -car_NB_index, ]
+
+naiveBayes.model <- naiveBayes( Class_Values~., data=car_NB_train)
+carTR_predict <- predict( naiveBayes.model, newdata=car_NB_train) # 训练集数据
+carTE_predict <- predict( naiveBayes.model, newdata=car_NB_test) # 测试集数据
