@@ -130,7 +130,7 @@ car_NB <- read.table(
   'http://archive.ics.uci.edu/ml/machine-learning-databases/car/car.data',  
   sep=',',  
   header = F,
-  stringsAsFactors = F
+  stringsAsFactors = T
 )
 names_car_NB <- c( "buying" , "maint", "doors", "persons", "lug_boot", "safety", "Class_Values")
 names( car_NB) <- names_car_NB
@@ -140,6 +140,13 @@ car_NB_index <- createDataPartition( car_NB$Class_Values, time = 1, p = 0.5, lis
 car_NB_train <- car_NB[ car_NB_index, ]
 car_NB_test <- car_NB[ -car_NB_index, ]
 
-naiveBayes.model <- naiveBayes( Class_Values~., data=car_NB_train)
-carTR_predict <- predict( naiveBayes.model, newdata=car_NB_train) # 训练集数据
-carTE_predict <- predict( naiveBayes.model, newdata=car_NB_test) # 测试集数据
+naiveBayes.model <- naiveBayes( Class_Values ~ ., data = car_NB_train) # 需要因子型变量
+# 概率验算, 即 当Class_Values 为 acc时，buying属性为 high的概率为：
+a <- dim( car_NB_train[ car_NB_train$Class_Values == "acc" & car_NB_train$buying == "high" , ] )[1]
+b <- dim( car_NB_train[ car_NB_train$Class_Values == "acc" , ] )[1]
+print( a/b) 
+
+carTR_predict <- predict( naiveBayes.model, newdata = car_NB_train) # 训练集数据
+prop.table( table( carTR_predict == car_NB_train[ ,7]) )
+carTE_predict <- predict( naiveBayes.model, newdata = car_NB_test) # 测试集数据
+prop.table( table( carTE_predict == car_NB_test[ ,7]) )
