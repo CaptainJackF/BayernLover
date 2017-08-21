@@ -45,3 +45,13 @@ fit.cart <- train( Species~., data = iris, method = "svmRadial",
 set.seed( 7)
 fit.cart <- train( Species~., data = iris, method = "rf", 
                    metric = metric, trControl = control)
+
+## summarize accuracy of models
+
+results <- resamples( list( lda=fit.lda, cart=fit.cart, knn=fit.knn, svm=fit.svm, rf=fit.rf))
+
+summary( results)
+
+# compare accuracy of models
+
+dotplot(results)
