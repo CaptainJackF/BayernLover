@@ -1,0 +1,47 @@
+# feature 可视化
+library( caret)
+x <- iris[ , 1:4]
+y <- iris[ , 5]
+# boxplot for each attribute on one image
+par( mfrow = c( 1, 4))
+for( i in 1:4){
+  boxplot( x[ , i], main = names( iris)[ i])
+}
+
+# box and whisker plots for each attribute.
+featurePlot( x, y, plot = "box")
+
+# density plots for each attribute.
+scales <- list( x = list( relation = "free"), y = list( relation = "free") )
+featurePlot( x = x, y = y, plot = "density", scales = scales)
+
+# 10交叉验证
+# Run algorithms using 10-fold cross validation
+control <- trainControl( method = "cv", number = 10)
+metric <- "Accuracy"
+
+# 5 Modle: LDA, CART, kNN, SVM, RF
+## linear algorithms: LDA
+set.seed( 3)
+fit.lda <- train( Species~., data = iris, method = "lda", 
+                  metric = metric, trControl = control)
+
+## nonliner algorithms
+### CART 
+set.seed( 4)
+fit.cart <- train( Species~., data = iris, method = "rpart", 
+                   metric = metric, trControl = control)
+### kNN
+set.seed( 5)
+fit.cart <- train( Species~., data = iris, method = "knn", 
+                   metric = metric, trControl = control)
+
+## advanced algorithms
+### SVM
+set.seed( 6)
+fit.cart <- train( Species~., data = iris, method = "svmRadial", 
+                   metric = metric, trControl = control)
+### Random Forest
+set.seed( 7)
+fit.cart <- train( Species~., data = iris, method = "rf", 
+                   metric = metric, trControl = control)
